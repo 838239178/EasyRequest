@@ -4,12 +4,10 @@ import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import org.apache.http.Header;
 import org.apache.http.HttpEntity;
-import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.util.EntityUtils;
 
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
-import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -25,22 +23,22 @@ public class Response {
     private final HashMap<String, String> headers;
     private final int statusCode;
 
-    public Response(HttpEntity entity, Header[] headers, int statusCode) throws IOException{
+    public Response(HttpEntity entity, Header[] headers, int statusCode) throws IOException {
         this.content = EntityUtils.toByteArray(entity);
         this.headers = new HashMap<>();
         this.statusCode = statusCode;
         setHeaders(headers);
     }
 
-    public void setHeaders(Header[] headers){
+    public void setHeaders(Header[] headers) {
         for (Header header : headers) {
-            this.headers.put(header.getName(),header.getValue());
+            this.headers.put(header.getName(), header.getValue());
         }
     }
 
-    public String getCharset(){
+    public String getCharset() {
         String ContentType = getHeader("Content-Type");
-        if(ContentType.isEmpty())
+        if (ContentType.isEmpty())
             return "UTF-8";
         else
             return ContentType.split(";")[1].split("=")[1];
@@ -60,7 +58,7 @@ public class Response {
         return json.getInnerMap();
     }
 
-    public String text(){
+    public String text() {
         try {
             return new String(content, getCharset());
         } catch (UnsupportedEncodingException e) {
@@ -70,7 +68,7 @@ public class Response {
     }
 
     public byte[] content() {
-       return content;
+        return content;
     }
 
 }
