@@ -20,6 +20,13 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+
+/**
+* 非常简洁的Request类，使用方法类似于Python的request模块<br>
+* 返回{@link Response}对象
+*
+* @author ShiJh
+*/
 public class Request {
 
     /**
