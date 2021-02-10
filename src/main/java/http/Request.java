@@ -146,7 +146,6 @@ public class Request {
             //设置请求头，如果有
             packageHeader(httpPost, header);
             httpPost.setHeader(entity.getContentType());
-            httpPost.setHeader("Content-Length", String.valueOf(entity.getContentLength()));
 
             resp = client.execute(httpPost);
             res = new Response(resp.getEntity(), resp.getAllHeaders(), resp.getStatusLine().getStatusCode());
@@ -178,11 +177,11 @@ public class Request {
 
             //设置请求体
             StringEntity entity = new StringEntity(json, "UTF-8");
+            httpPost.setEntity(entity);
 
             //设置请求头，如果有
             packageHeader(httpPost, header);
             httpPost.setHeader(entity.getContentType());
-            httpPost.setHeader("Content-Length", String.valueOf(entity.getContentLength()));
 
             resp = client.execute(httpPost);
             res = new Response(resp.getEntity(), resp.getAllHeaders(), resp.getStatusLine().getStatusCode());

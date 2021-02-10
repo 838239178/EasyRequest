@@ -38,10 +38,13 @@ public class Response {
 
     public String getCharset() {
         String ContentType = getHeader("Content-Type");
-        if (ContentType.isEmpty())
-            return "UTF-8";
-        else
-            return ContentType.split(";")[1].split("=")[1];
+        String[] param = ContentType.split(";");
+        for (String p : param) {
+            if (p.toLowerCase().contains("charset")) {
+                return p.split("=")[1];
+            }
+        }
+        return "utf-8";
     }
 
     public int getStatusCode() {

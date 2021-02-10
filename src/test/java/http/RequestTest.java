@@ -8,6 +8,7 @@ import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.util.HashMap;
 
 
 public class RequestTest {
@@ -28,6 +29,12 @@ public class RequestTest {
 
     @Test
     public void post() {
-
+        String url = "http://data.zz.baidu.com/urls?site=https://blog.pressed.top&token=by6mvvujkkDYRcdo";
+        String content = "https://blog.pressed.top/LinkGame";
+        HashMap<String, String> header = new HashMap<>();
+        header.put("User-Agent", "curl/7.12.1");
+        header.put("Host", "data.zz.baidu.com");
+        Response resp = Request.post(url, header, content);
+        System.out.println(resp.text());
     }
 }
