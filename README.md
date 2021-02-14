@@ -40,7 +40,7 @@
 
    该方法有两个参数，可缺省`headers`使用
 
-   - url：请求地址必须以 `http://`或`https://`开头，可以使用`?key1=value1&key2=value2`来携带参数
+   - url：请求地址必须以 `cn.shijh.http://`或`https://`开头，可以使用`?key1=value1&key2=value2`来携带参数
    - headers：请求头，参数类型为 `HashMap<String,String>`
 
 2. 使用 `post()`发送请求

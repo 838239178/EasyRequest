@@ -1,4 +1,4 @@
-package http;
+package cn.shijh.http;
 
 import org.apache.http.HttpEntity;
 import org.apache.http.NameValuePair;
@@ -59,7 +59,7 @@ public class Request {
                 Registry<ConnectionSocketFactory> socketFactoryRegistry =
                         RegistryBuilder.<ConnectionSocketFactory>
                                 create()
-                                .register("http", PlainConnectionSocketFactory.getSocketFactory()).register("https", sslcsf).build();
+                                .register("cn/shijh/http", PlainConnectionSocketFactory.getSocketFactory()).register("https", sslcsf).build();
 
                 // 初始化连接管理器
                 manager = new PoolingHttpClientConnectionManager(socketFactoryRegistry);
