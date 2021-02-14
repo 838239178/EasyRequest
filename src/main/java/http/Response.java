@@ -13,6 +13,7 @@ import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.NoSuchElementException;
 
 /**
  * 通过以下方法获取你想要的值<br>
@@ -126,16 +127,37 @@ public class Response {
     //region get methods
 
     /**
+     * 获得任意类型的对象及数组，以Object形式返回
+     *
+     * @param name 键名，使用<b>"a.b.c"</b>来获得嵌套的对象
+     * @return 返回为 {@link Object}
+     * @throws NoSuchElementException 如果不存在该键
+     */
+    public Object getParam(String name) {
+        // 已知 get、getArr 在Object该状态下只可能抛出NullPointerException
+        try {
+            return get(Object.class, name);
+        } catch (NullPointerException e) {
+            try {
+                return getArr(Object.class, name);
+            } catch (NullPointerException ne) {
+                throw new NoSuchElementException("parameter not found");
+            }
+        }
+    }
+
+    /**
      * 获得任意类型的对象
      *
      * @param clazz 对象的类
      * @param name  键名，使用<b>"a.b.c"</b>来获得嵌套的对象
      * @param <T>   任意类
      * @return 返回类型为 <b>T</b> 的对象
-     * @throws JSONException      如果响应体不是 <b>application/json</b> 类型
-     * @throws ClassCastException 如果最终得到的对象类型无法转换为 <b>T</b>
+     * @throws JSONException        如果响应体不是 <b>application/json</b> 类型
+     * @throws ClassCastException   如果最终得到的对象类型无法转换为 <b>T</b>
+     * @throws NullPointerException 如果该键不存在
      */
-    public <T> T get(Class<T> clazz, String name) throws JSONException, ClassCastException {
+    public <T> T get(Class<T> clazz, String name) throws JSONException, ClassCastException, NullPointerException {
         JSONObject json = json();
         String[] keys = name.split("\\.");
         for (String key : keys) {
@@ -159,7 +181,7 @@ public class Response {
     public String getString(String name) {
         try {
             return get(String.class, name);
-        } catch (JSONException | ClassCastException e) {
+        } catch (JSONException | ClassCastException | NullPointerException e) {
             e.printStackTrace();
         }
         return "";
@@ -174,7 +196,7 @@ public class Response {
     public Integer getInt(String name) {
         try {
             return get(Integer.class, name);
-        } catch (JSONException | ClassCastException e) {
+        } catch (JSONException | ClassCastException | NullPointerException e) {
             e.printStackTrace();
         }
         return 0;
@@ -189,7 +211,7 @@ public class Response {
     public Float getFloat(String name) {
         try {
             return get(Float.class, name);
-        } catch (JSONException | ClassCastException e) {
+        } catch (JSONException | ClassCastException | NullPointerException e) {
             e.printStackTrace();
         }
         return 0f;
@@ -204,7 +226,7 @@ public class Response {
     public Double getDouble(String name) {
         try {
             return get(Double.class, name);
-        } catch (JSONException | ClassCastException e) {
+        } catch (JSONException | ClassCastException | NullPointerException e) {
             e.printStackTrace();
         }
         return 0.0;
@@ -217,7 +239,12 @@ public class Response {
      * @return array of {@link String}
      */
     public String[] getStrArr(String name) {
-        return getArr(String.class, name).toArray(new String[0]);
+        try {
+            return getArr(String.class, name).toArray(new String[0]);
+        } catch (NullPointerException e) {
+            e.printStackTrace();
+        }
+        return new String[0];
     }
 
     /**
@@ -227,7 +254,12 @@ public class Response {
      * @return array of {@link Integer}
      */
     public Integer[] getIntArr(String name) {
-        return getArr(Integer.class, name).toArray(new Integer[0]);
+        try {
+            return getArr(Integer.class, name).toArray(new Integer[0]);
+        } catch (NullPointerException e) {
+            e.printStackTrace();
+        }
+        return new Integer[0];
     }
 
     /**
@@ -237,7 +269,12 @@ public class Response {
      * @return array of {@link Float}
      */
     public Float[] getFloatArr(String name) {
-        return getArr(Float.class, name).toArray(new Float[0]);
+        try {
+            return getArr(Float.class, name).toArray(new Float[0]);
+        } catch (NullPointerException e) {
+            e.printStackTrace();
+        }
+        return new Float[0];
     }
 
     /**
@@ -247,7 +284,12 @@ public class Response {
      * @return array of {@link Double}
      */
     public Double[] getDoubleArr(String name) {
-        return getArr(Double.class, name).toArray(new Double[0]);
+        try {
+            return getArr(Double.class, name).toArray(new Double[0]);
+        } catch (NullPointerException e) {
+            e.printStackTrace();
+        }
+        return new Double[0];
     }
 
     /**
@@ -257,10 +299,9 @@ public class Response {
      * @param name  键名，使用<b>"a.b.c"</b>来获得嵌套的对象
      * @param <T>   任意类
      * @return 返回类型为 <b>T</b> 的集合
-     * @throws JSONException      如果响应体不是 <b>application/json</b> 类型
-     * @throws ClassCastException 如果最终得到的对象类型无法转换为 <b>T</b>
+     * @throws NullPointerException 如果该键不存在
      */
-    public <T> List<T> getArr(Class<T> clazz, String name) {
+    public <T> List<T> getArr(Class<T> clazz, String name) throws NullPointerException {
         try {
             JSONArray jArr = get(JSONArray.class, name);
             return jArr.toJavaList(clazz);

@@ -77,3 +77,4 @@
 
 7. 新增：当请求体类型是`application/json`时，使用`getBean(class, name)`来快速转换Json，获得一个JavaBean对象，有关JavaBean的标准请移步[JavaBean的定义](https://www.liaoxuefeng.com/wiki/1252599548343744/1260474416351680)，另外请注意使用时确保存在**无参构造函数**！
 
+8. 新增：当请求体类型是`application/json`时，使用`getParam(name)`可以获得任意对象及数组，返回为`Object`类型
