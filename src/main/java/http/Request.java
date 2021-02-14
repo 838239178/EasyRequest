@@ -6,14 +6,26 @@ import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.entity.UrlEncodedFormEntity;
 import org.apache.http.client.methods.*;
 import org.apache.http.client.utils.URIBuilder;
+import org.apache.http.config.Registry;
+import org.apache.http.config.RegistryBuilder;
+import org.apache.http.conn.socket.ConnectionSocketFactory;
+import org.apache.http.conn.socket.PlainConnectionSocketFactory;
+import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
+import org.apache.http.conn.ssl.TrustSelfSignedStrategy;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.DefaultHttpRequestRetryHandler;
 import org.apache.http.impl.client.HttpClients;
+import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
 import org.apache.http.message.BasicNameValuePair;
+import org.apache.http.ssl.SSLContextBuilder;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URISyntaxException;
+import java.security.KeyManagementException;
+import java.security.KeyStoreException;
+import java.security.NoSuchAlgorithmException;
 import java.util.*;
 import java.util.logging.Logger;
 
@@ -26,6 +38,8 @@ import java.util.logging.Logger;
  */
 public class Request {
     private static RequestConfig config;
+    private static PoolingHttpClientConnectionManager manager;
+    private static CloseableHttpClient client;
 
     static {
         config = RequestConfig.DEFAULT;
@@ -35,13 +49,39 @@ public class Request {
                     .setSocketTimeout(Integer.parseInt(bundle.getString("socketTimeout")))
                     .setConnectTimeout(Integer.parseInt(bundle.getString("connectTimeout")))
                     .build();
+
+            try {
+                SSLContextBuilder builder = new SSLContextBuilder();
+                builder.loadTrustMaterial(null, new TrustSelfSignedStrategy());
+                SSLConnectionSocketFactory sslcsf = new SSLConnectionSocketFactory(builder.build());
+
+                // 配置同时支持 HTTP 和 HTTPS
+                Registry<ConnectionSocketFactory> socketFactoryRegistry =
+                        RegistryBuilder.<ConnectionSocketFactory>
+                                create()
+                                .register("http", PlainConnectionSocketFactory.getSocketFactory()).register("https", sslcsf).build();
+
+                // 初始化连接管理器
+                manager = new PoolingHttpClientConnectionManager(socketFactoryRegistry);
+                manager.setMaxTotal(Integer.parseInt(bundle.getString("connectionMaxTotal")));// 同时最多连接数
+
+                // 设置最大路由
+                manager.setDefaultMaxPerRoute(Integer.parseInt(bundle.getString("connectionMaxPerRoute")));
+            } catch (NoSuchAlgorithmException | KeyStoreException | KeyManagementException e) {
+                e.printStackTrace();
+            }
         } catch (NullPointerException e) {
-            Logger.getGlobal().warning("找不到配置文件或配置文件内容有误，已使用默认RequestConfig配置");
+            Logger.getGlobal().warning("找不到配置文件或配置文件内容有误，已使用默认配置");
         } catch (IOException e) {
             e.printStackTrace();
         } catch (IllegalArgumentException e) {
-            Logger.getGlobal().warning("配置文件出错，已使用默认RequestConfig配置");
+            Logger.getGlobal().warning("配置文件出错，已使用默认配置");
         }
+        client = HttpClients.custom()
+                .setDefaultRequestConfig(config)
+                .setConnectionManager(manager)
+                .setRetryHandler(new DefaultHttpRequestRetryHandler(3, false))
+                .build();
     }
 
     /**
@@ -68,7 +108,7 @@ public class Request {
         Response res = null;
         CloseableHttpResponse resp = null;
 
-        try (CloseableHttpClient client = getHttpClient()) {
+        try {
             //解析链接
             String[] urlParts = url.split("\\?");
 
@@ -98,24 +138,18 @@ public class Request {
 
             //发送请求
             res = new Response(resp.getEntity(), resp.getAllHeaders(), resp.getStatusLine().getStatusCode());
-        } catch (URISyntaxException e) {
-            e.printStackTrace();
-        } catch (IOException e) {
+        } catch (URISyntaxException | IOException e) {
             e.printStackTrace();
         } finally {
             try {
-                resp.close();
+                if (resp != null) {
+                    resp.close();
+                }
             } catch (IOException e) {
                 e.printStackTrace();
             }
         }
         return res;
-    }
-
-    private static CloseableHttpClient getHttpClient() {
-        return HttpClients.custom()
-                .setDefaultRequestConfig(config)
-                .build();
     }
 
     private static void packageHeader(HttpRequestBase request, Map<String, String> headers) {
@@ -159,7 +193,7 @@ public class Request {
     public static Response post(String url, Map<String, String> header, Map<String, String> param) {
         Response res = null;
         CloseableHttpResponse resp = null;
-        try (CloseableHttpClient client = getHttpClient()) {
+        try {
             HttpPost httpPost = new HttpPost(url);
 
             //设置请求体
@@ -198,7 +232,7 @@ public class Request {
     public static Response post(String url, Map<String, String> header, String text) {
         Response res = null;
         CloseableHttpResponse resp = null;
-        try (CloseableHttpClient client = getHttpClient()) {
+        try {
             HttpPost httpPost = new HttpPost(url);
 
             //设置请求体
