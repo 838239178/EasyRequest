@@ -33,7 +33,8 @@ public class RequestTest {
     @Test
     public void post() {
         String url = "http://data.zz.baidu.com/urls?site=https://blog.pressed.top&token=by6mvvujkkDYRcdo";
-        String content = "https://blog.pressed.top/LinkGame";
+        String content = "https://blog.pressed.top/LinkGame\n"
+                + "https://blog.pressed.top/javaweb";
         HashMap<String, String> header = new HashMap<>();
         header.put("User-Agent", "curl/7.12.1");
         header.put("Host", "data.zz.baidu.com");
